@@ -480,8 +480,9 @@ a { color: inherit; }
   padding: 14px 20px;
   border-bottom: 1px solid var(--border);
 }
-.results-count { font-size: .88rem; color: var(--text-secondary); }
+.results-count { font-size: .88rem; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .results-count strong { color: var(--text-primary); font-weight: 700; }
+.nearby-badge { background: #fff3cd; color: #856404; font-size: .78rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
 .sort-btns { display: flex; gap: 6px; }
 .sort-btn {
   padding: 6px 12px;

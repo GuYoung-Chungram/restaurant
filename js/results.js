@@ -3,7 +3,7 @@ import { haversineDistance, formatDistance, formatPhone, tm128ToWgs84, showToast
 import { getFoodTypeEmoji } from './filters.js';
 
 export function renderResults() {
-  const { results, totalCount, isEnd, userGPS, sortBy, isLoading } = getState();
+  const { results, totalCount, isEnd, userGPS, sortBy, isLoading, isNearbyMode } = getState();
   const container = document.getElementById('results-list');
   if (!container) return;
 
@@ -13,18 +13,20 @@ export function renderResults() {
   }
 
   if (!isLoading && results.length === 0) {
+    const emptyMsg = isNearbyMode
+      ? '<p>근처 50km 이내에 결과가 없어요</p><p class="empty-sub">필터를 줄이거나 다른 음식 종류를 선택해보세요</p>'
+      : '<p>검색 결과가 없어요</p><p class="empty-sub">필터를 줄이거나 다른 지역을 선택해보세요</p>';
     container.innerHTML = `
       <div class="empty-state">
         <span class="empty-icon">🍽️</span>
-        <p>검색 결과가 없어요</p>
-        <p class="empty-sub">필터를 줄이거나 다른 지역을 선택해보세요</p>
+        ${emptyMsg}
         <button class="btn-retry" onclick="window.goToStep(1)">다시 검색</button>
       </div>`;
     return;
   }
 
   const sortedResults = sortResults(results, sortBy, userGPS);
-  const header = buildResultsHeader(totalCount, sortBy);
+  const header = buildResultsHeader(totalCount, sortBy, isNearbyMode);
   const cards = sortedResults.map((place, idx) => buildCard(place, idx, userGPS));
 
   container.innerHTML = '';
@@ -55,11 +57,12 @@ function sortResults(results, sortBy, userGPS) {
   return results;
 }
 
-function buildResultsHeader(totalCount, sortBy) {
+function buildResultsHeader(totalCount, sortBy, isNearbyMode) {
   const header = document.createElement('div');
   header.className = 'results-header';
+  const nearbyBadge = isNearbyMode ? '<span class="nearby-badge">📍 내 주변 50km</span>' : '';
   header.innerHTML = `
-    <span class="results-count">총 <strong>${totalCount.toLocaleString()}</strong>개</span>
+    <span class="results-count">${nearbyBadge}총 <strong>${totalCount.toLocaleString()}</strong>개</span>
     <div class="sort-btns">
       <button class="sort-btn ${sortBy === 'accuracy' ? 'active' : ''}" data-sort="accuracy">리뷰순</button>
       <button class="sort-btn ${sortBy === 'distance' ? 'active' : ''}" data-sort="distance">거리순</button>

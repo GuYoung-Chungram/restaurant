@@ -2,7 +2,9 @@ import { searchRestaurants } from './naver-search.js';
 import { getState, setState, getSearchRegion } from './state.js';
 import { goToStep, renderRegionStep, renderFoodStep, renderFilterStep, getBackStep } from './wizard.js';
 import { renderResults } from './results.js';
-import { showToast, showBanner } from './utils.js';
+import { showToast, showBanner, haversineDistance, tm128ToWgs84 } from './utils.js';
+
+const NEARBY_MAX_KM = 50;
 
 window.goToStep = goToStep;
 
@@ -95,10 +97,20 @@ async function handleSearch(isLoadMore = false) {
       sort: 'comment'
     });
 
+    const { userGPS, isNearbyMode } = getState();
+    let filteredPlaces = places;
+    if (isNearbyMode && userGPS) {
+      filteredPlaces = places.filter(p => {
+        const { lat, lng } = tm128ToWgs84(p.mapx, p.mapy);
+        if (!lat || !lng) return false;
+        return haversineDistance(userGPS.lat, userGPS.lng, lat, lng) <= NEARBY_MAX_KM;
+      });
+    }
+
     const prev = getState().results;
     setState({
-      results: isLoadMore ? [...prev, ...places] : places,
-      totalCount,
+      results: isLoadMore ? [...prev, ...filteredPlaces] : filteredPlaces,
+      totalCount: isNearbyMode ? filteredPlaces.length + (isLoadMore ? prev.length : 0) : totalCount,
       isEnd,
       page: isLoadMore ? page + 1 : 2,
       isLoading: false

@@ -82,14 +82,16 @@ async function handleNearbyClick(userGPS) {
     const data = await res.json();
     const addr = data.address || {};
 
-    const city = addr.city || addr.county || addr.state || '';
-    const district = addr.city_district || addr.suburb || addr.borough || '';
+    const city = addr.city || addr.county || addr.town || addr.state || '';
+    const district = addr.city_district || addr.suburb || addr.borough || addr.village || addr.hamlet || '';
     const dong = addr.quarter || addr.neighbourhood || '';
 
     setState({
       selectedCity: city,
       selectedDistrict: district || null,
       selectedDong: dong || null,
+      isNearbyMode: true,
+      sortBy: 'distance',
     });
   } catch {
     setState({ selectedCity: '내 주변', selectedDistrict: null, selectedDong: null });
@@ -102,7 +104,7 @@ async function handleNearbyClick(userGPS) {
 function toggleCity(region, chip, container) {
   container.querySelectorAll('.city-chip').forEach(c => c.classList.remove('active'));
   chip.classList.add('active');
-  setState({ selectedCity: region.name, selectedDistrict: null });
+  setState({ selectedCity: region.name, selectedDistrict: null, isNearbyMode: false, sortBy: 'accuracy' });
 
   const existing = container.querySelector('.district-panel');
   if (existing) existing.remove();

@@ -9,7 +9,8 @@ const state = {
   results: [],
   totalCount: 0,
   page: 1,
-  sortBy: 'accuracy',
+  sortBy: 'distance',
+  isNearbyMode: false,
   isLoading: false,
   isEnd: false,
   error: null
