@@ -70,10 +70,31 @@ export function renderRegionStep() {
   container.appendChild(cityGrid);
 }
 
-function handleNearbyClick(userGPS) {
-  setState({ selectedCity: '내 주변', selectedDistrict: null });
-  const { lat, lng } = userGPS;
-  setState({ userGPS: { lat, lng } });
+async function handleNearbyClick(userGPS) {
+  const btn = document.querySelector('.btn-nearby');
+  if (btn) { btn.disabled = true; btn.textContent = '📍 위치 확인 중...'; }
+
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${userGPS.lat}&lon=${userGPS.lng}&format=json&accept-language=ko`,
+      { headers: { 'Accept-Language': 'ko' } }
+    );
+    const data = await res.json();
+    const addr = data.address || {};
+
+    const city = addr.city || addr.county || addr.state || '';
+    const district = addr.city_district || addr.suburb || addr.borough || '';
+    const dong = addr.quarter || addr.neighbourhood || '';
+
+    setState({
+      selectedCity: city,
+      selectedDistrict: district || null,
+      selectedDong: dong || null,
+    });
+  } catch {
+    setState({ selectedCity: '내 주변', selectedDistrict: null, selectedDong: null });
+  }
+
   goToStep(2);
   renderFoodStep();
 }
