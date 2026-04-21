@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -S localhost:8000)",
+      "Bash(curl -s \"http://localhost:8000/api/proxy.php?query=강남구+한식+맛집\")",
+      "Bash(brew install *)",
+      "Bash(php -S localhost:8000 -t .)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(xargs kill *)",
+      "Bash(echo \"PID: $!\" sleep 2 curl -s \"http://localhost:8000/api/proxy.php?query=강남구+한식+맛집\")",
+      "Bash(curl -v \"http://localhost:8000/api/proxy.php?query=강남구+한식+맛집\")",
+      "Bash(echo \"PID: $!\" sleep 2 curl -s \"http://localhost:8000/api/proxy.php?query=gangnam+hansik\")"
+    ]
+  }
+}
