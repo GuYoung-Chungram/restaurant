@@ -1,3 +1,13 @@
+async function fetchJson(url, headers) {
+  const upstream = await fetch(url, { headers });
+  const text = await upstream.text();
+  try {
+    return { status: upstream.status, data: JSON.parse(text) };
+  } catch {
+    return { status: upstream.status, data: null, raw: text.slice(0, 200) };
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -19,9 +29,9 @@ export default async function handler(req, res) {
 
   if (action === 'image') {
     const url = `https://openapi.naver.com/v1/search/image.json?${new URLSearchParams({ query, display: 1, filter: 'large' })}`;
-    const upstream = await fetch(url, { headers });
-    const data = await upstream.json();
-    return res.status(200).json(data);
+    const { status, data } = await fetchJson(url, headers);
+    if (!data) return res.status(502).json({ error: '이미지 API 응답 오류' });
+    return res.status(status).json(data);
   }
 
   const safeDisplay = Math.min(Math.max(parseInt(display), 1), 5);
@@ -29,7 +39,7 @@ export default async function handler(req, res) {
   const safeSort = ['comment', 'random'].includes(sort) ? sort : 'comment';
 
   const url = `https://openapi.naver.com/v1/search/local.json?${new URLSearchParams({ query, display: safeDisplay, start: safeStart, sort: safeSort })}`;
-  const upstream = await fetch(url, { headers });
-  const data = await upstream.json();
-  return res.status(200).json(data);
+  const { status, data } = await fetchJson(url, headers);
+  if (!data) return res.status(502).json({ error: '네이버 API 응답을 파싱할 수 없습니다' });
+  return res.status(status).json(data);
 }
