@@ -113,10 +113,13 @@ async function handleSearch(isLoadMore = false) {
       filteredPlaces = filteredPlaces.filter(p => !seenIds.has(p.id));
     }
 
+    // 중복 제거 후 새 결과가 없으면 종료 처리
+    const noNewResults = isLoadMore && filteredPlaces.length === 0;
+
     setState({
       results: isLoadMore ? [...prev, ...filteredPlaces] : filteredPlaces,
       totalCount: isNearbyMode ? filteredPlaces.length + (isLoadMore ? prev.length : 0) : totalCount,
-      isEnd,
+      isEnd: isEnd || noNewResults,
       page: isLoadMore ? page + 1 : 2,
       isLoading: false
     });

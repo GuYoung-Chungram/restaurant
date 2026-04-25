@@ -2,6 +2,9 @@
 const PROXY_URL = '/api/search';
 const PAGE_SIZE = 5;
 
+// 더보기마다 다른 검색어 변형을 사용해 새로운 결과를 가져옴
+const QUERY_VARIANTS = ['맛집', '식당', '음식점', '맛있는곳', '추천맛집'];
+
 /**
  * Search restaurants via Naver Local Search API.
  * @param {object} opts
@@ -13,8 +16,11 @@ const PAGE_SIZE = 5;
  * @returns {Promise<{ places: object[], totalCount: number, isEnd: boolean }>}
  */
 export async function searchRestaurants({ region, foodTypes, filters, page = 1, sort = 'comment' }) {
-  const query = buildSearchQuery(region, foodTypes, filters);
-  const start = (page - 1) * PAGE_SIZE + 1;
+  // page 1은 기본 쿼리, 더보기(page 2+)는 다른 검색어 변형 사용
+  const variantIndex = page - 1;
+  const query = buildSearchQuery(region, foodTypes, filters, variantIndex);
+  // 쿼리 변형 방식이므로 start는 항상 1
+  const start = 1;
 
   const params = new URLSearchParams({
     query,
@@ -37,8 +43,8 @@ export async function searchRestaurants({ region, foodTypes, filters, page = 1, 
   const items = (data.items || []).map(normalizeItem);
   const totalCount = data.total || 0;
 
-  // isEnd: got fewer items than requested OR reached Naver's 25-result cap
-  const isEnd = items.length < PAGE_SIZE || page >= 5;
+  // isEnd: 결과 부족 또는 변형 쿼리를 모두 소진
+  const isEnd = items.length < PAGE_SIZE || page >= QUERY_VARIANTS.length;
 
   // Fetch thumbnails in parallel (best-effort, failures silently skipped)
   const thumbResults = await Promise.allSettled(items.map(p => fetchThumbnail(p.name, p.category)));
@@ -62,11 +68,12 @@ async function fetchThumbnail(name, category) {
   }
 }
 
-function buildSearchQuery(region, foodTypes, filters) {
+function buildSearchQuery(region, foodTypes, filters, variantIndex = 0) {
+  const variant = QUERY_VARIANTS[variantIndex % QUERY_VARIANTS.length];
   const parts = [];
   if (region) parts.push(region);
   if (foodTypes && foodTypes.length) parts.push(foodTypes.join(' '));
-  parts.push('맛집');
+  parts.push(variant);
   if (filters && filters.length) parts.push(filters.join(' '));
   return parts.join(' ');
 }
