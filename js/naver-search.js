@@ -1,5 +1,5 @@
 // Naver Local Search API via PHP proxy
-const PROXY_URL = 'api/proxy.php';
+const PROXY_URL = '/api/search';
 const PAGE_SIZE = 5;
 
 /**
