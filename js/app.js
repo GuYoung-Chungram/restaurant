@@ -94,7 +94,7 @@ async function handleSearch(isLoadMore = false) {
       foodTypes,
       filters,
       page: isLoadMore ? page : 1,
-      sort: 'comment'
+      sort: isLoadMore ? 'random' : 'comment'
     });
 
     const { userGPS, isNearbyMode } = getState();
@@ -108,6 +108,11 @@ async function handleSearch(isLoadMore = false) {
     }
 
     const prev = getState().results;
+    if (isLoadMore) {
+      const seenIds = new Set(prev.map(p => p.id));
+      filteredPlaces = filteredPlaces.filter(p => !seenIds.has(p.id));
+    }
+
     setState({
       results: isLoadMore ? [...prev, ...filteredPlaces] : filteredPlaces,
       totalCount: isNearbyMode ? filteredPlaces.length + (isLoadMore ? prev.length : 0) : totalCount,
