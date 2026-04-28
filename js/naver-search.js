@@ -1,5 +1,5 @@
 // Naver Local Search API via PHP proxy
-const PROXY_URL = '/api/search';
+const PROXY_URL = 'api/proxy.php';
 const PAGE_SIZE = 5;
 
 // 더보기마다 다른 검색어 변형을 사용해 새로운 결과를 가져옴
